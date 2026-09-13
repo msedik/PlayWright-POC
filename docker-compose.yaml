@@ -1,0 +1,7 @@
+services:
+  playwright-test:
+    build: .
+    volumes:
+      - .:/playwrightPOCContainer1
+    environment:
+      - commandToRunTests=npx playwright test Pom.spec.ts

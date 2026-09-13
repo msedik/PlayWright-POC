@@ -3,9 +3,34 @@ name: Morning pipeline for playwright tests
 on:
   push:
     branches:
-      - '**'
+      - 'master'
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      test_to_run:
+        description: 'Add your npx code here'
+        required: false
+        default: 'npx playwright test'
+        type: string
+      workers:
+        description: 'number of workers to use'
+        required: false
+        default: '1'
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '3'
+          - '4'
+      browsers:
+        description: 'browsers to run tests on'
+        required: false
+        default: 'chromium'
+        type: choice
+        options:
+          - 'chromium'
+          - 'firefox'
 
 jobs:
   test:
@@ -25,12 +50,13 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests
-        run: npx playwright test -g "E2E"
+        env:
+          TEST_TO_RUN: ${{ github.event.inputs.test_to_run || 'npx playwright test' }}
+          WORKERS: ${{ github.event.inputs.workers || '1' }}
+          BROWSER: ${{ github.event.inputs.browsers || 'chromium' }}
+        run: |
+          $TEST_TO_RUN --workers=$WORKERS --project=$BROWSER
 
       - name: Upload playwright report
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 30
