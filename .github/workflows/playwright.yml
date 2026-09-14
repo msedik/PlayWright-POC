@@ -1,0 +1,62 @@
+name: Morning pipeline for playwright tests
+
+on:
+  push:
+    branches:
+      - 'Development-Branch'
+  pull_request:
+    branches: [ Development-Branch]
+  workflow_dispatch:
+    inputs:
+      test_to_run:
+        description: 'Add your npx code here'
+        required: false
+        default: 'npx playwright test'
+        type: string
+      workers:
+        description: 'number of workers to use'
+        required: false
+        default: '1'
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '3'
+          - '4'
+      browsers:
+        description: 'browsers to run tests on'
+        required: false
+        default: 'chromium'
+        type: choice
+        options:
+          - 'chromium'
+          - 'firefox'
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        env:
+          TEST_TO_RUN: ${{ github.event.inputs.test_to_run || 'npx playwright test' }}
+          WORKERS: ${{ github.event.inputs.workers || '1' }}
+          BROWSER: ${{ github.event.inputs.browsers || 'chromium' }}
+        run: |
+          $TEST_TO_RUN --workers=$WORKERS --project=$BROWSER
+
+      - name: Upload playwright report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
