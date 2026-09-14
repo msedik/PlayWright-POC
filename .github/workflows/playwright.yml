@@ -3,9 +3,9 @@ name: Morning pipeline for playwright tests
 on:
   push:
     branches:
-      - 'master'
+      - 'Development-Branch'
   pull_request:
-    branches: [ main ]
+    branches: [Development-Branch ]
   workflow_dispatch:
     inputs:
       test_to_run:
