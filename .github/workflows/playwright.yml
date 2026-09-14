@@ -5,7 +5,7 @@ on:
     branches:
       - 'Development-Branch'
   pull_request:
-    branches: [ main]
+    branches: [ Development-Branch]
   workflow_dispatch:
     inputs:
       test_to_run:
